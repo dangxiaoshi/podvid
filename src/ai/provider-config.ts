@@ -6,8 +6,9 @@ export function parseProviderType(
   value: string | null | undefined
 ): ProviderType | undefined {
   if (!value) return undefined;
-  if ((AI_PROVIDERS as readonly string[]).includes(value)) {
-    return value as ProviderType;
+  const normalizedValue = value.trim();
+  if ((AI_PROVIDERS as readonly string[]).includes(normalizedValue)) {
+    return normalizedValue as ProviderType;
   }
   return undefined;
 }
