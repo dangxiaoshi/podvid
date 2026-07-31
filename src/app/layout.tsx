@@ -78,10 +78,16 @@ export default async function RootLayout({
 }: RootLayoutProps) {
   const locale = await getLocale();
   const messages = await getMessages();
+  const waffoVerifyToken =
+    process.env.WAFFO_VERIFY_TOKEN?.trim() ||
+    "19b681f5b1992e45aee15b24cd5439e9";
 
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
+        {waffoVerifyToken ? (
+          <meta name="waffo-verify" content={waffoVerifyToken} />
+        ) : null}
         <script
           dangerouslySetInnerHTML={{
             __html: `

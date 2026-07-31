@@ -31,8 +31,8 @@ export function LandingFooter() {
     {
       title: t('legal'),
       links: [
-        { title: t('privacy'), href: "/privacy" },
-        { title: t('terms'), href: "/terms" },
+        { title: t('privacy'), href: "/privacy-policy" },
+        { title: t('terms'), href: "/terms-of-service" },
         // { title: t('cookie'), href: "/cookies" },
       ],
     },
@@ -55,6 +55,12 @@ export function LandingFooter() {
             <p className="text-sm text-muted-foreground mb-4">
               {t('tagline')}
             </p>
+            <a
+              href="mailto:support@podvid.uk"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t('support')}: support@podvid.uk
+            </a>
           </div>
 
           {/* Footer Links */}
