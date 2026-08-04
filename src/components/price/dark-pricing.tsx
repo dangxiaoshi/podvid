@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import Balancer from "react-wrap-balancer";
 import { IconCheck, IconX } from "@tabler/icons-react";
 import { Loader2 } from "lucide-react";
@@ -32,6 +32,9 @@ type FeatureItem = {
   text: string;
   included: boolean;
 };
+
+const CLINK_UAT_BASIC_MONTHLY_SOURCE_PRODUCT_ID =
+  "prod_jsRIeZmqn3L9NN2fiFIn6";
 
 function formatPrice(cents: number): string {
   const value = (cents / 100).toFixed(cents % 100 === 0 ? 0 : 2);
@@ -65,6 +68,28 @@ export function DarkPricing({
   const { balance } = useCredits();
   const userPlan = balance?.plan || "FREE";
   const isFreeUser = !userPlan || userPlan === "FREE";
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const paymentStatus = searchParams.get("payment");
+    if (searchParams.get("provider") !== "clink-uat") return;
+
+    if (paymentStatus === "success") {
+      toast.success("Clink UAT payment completed", {
+        description: "The $9.90 test payment was verified. No PodVid plan was activated.",
+      });
+    } else if (paymentStatus === "cancelled") {
+      toast.info("Payment cancelled", { description: "No test payment was made." });
+    } else if (paymentStatus === "failed") {
+      toast.error("Payment not verified", {
+        description: "Clink did not report this test payment as paid.",
+      });
+    }
+
+    if (paymentStatus) {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
 
   // 组织产品数据
   const allSubscriptionProducts = useMemo(
@@ -100,6 +125,37 @@ export function DarkPricing({
     }
 
     startTransition(async () => {
+      if (product.id === CLINK_UAT_BASIC_MONTHLY_SOURCE_PRODUCT_ID) {
+        try {
+          const response = await fetch("/api/v1/payments/clink/uat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              locale: window.location.pathname.startsWith("/zh") ? "zh" : "en",
+            }),
+          });
+          const checkout = (await response.json()) as {
+            checkoutUrl?: string;
+            error?: string;
+          };
+
+          if (!response.ok || !checkout.checkoutUrl) {
+            toast.error("Checkout error", {
+              description:
+                checkout.error || "Failed to create Clink checkout session.",
+            });
+            return;
+          }
+
+          window.location.href = checkout.checkoutUrl;
+        } catch {
+          toast.error("Checkout error", {
+            description: "Unable to connect to Clink. Please try again.",
+          });
+        }
+        return;
+      }
+
       const origin = window.location.origin;
       // 支付成功后跳转到 credits 页面
       // 如果当前不在 pricing 页面（例如嵌入在其他页面的弹窗），则设置 returnTo 以便跳回
