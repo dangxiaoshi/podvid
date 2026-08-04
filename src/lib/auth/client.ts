@@ -5,6 +5,8 @@ import { magicLinkClient } from "better-auth/client/plugins";
 import { creemClient } from "@creem_io/better-auth/client";
 
 export const authClient = createAuthClient({
+  baseURL:
+    typeof window !== "undefined" ? window.location.origin : undefined,
   basePath: "/api/auth",
   plugins: [magicLinkClient(), creemClient()],
 });
